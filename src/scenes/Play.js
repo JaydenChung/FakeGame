@@ -29,13 +29,13 @@ class Play extends Phaser.Scene {
         if (this.cursors.left.isDown) {
             this.background.tilePositionX -= this.horizontalSpeed;
             this.zoom()
-            this.dragonmove()
         }
     
         if (this.cursors.right.isDown) {
             this.background.tilePositionX += this.horizontalSpeed;
             this.zoom()
         }
+        this.dragonmove()
 
     }
 
@@ -47,8 +47,28 @@ class Play extends Phaser.Scene {
     
     dragonmove(){
         this.dragonSpeed = 200
-        this.player.anims.play("dragon-move", true)
-        // this.dragon.setVelocityX(this.dragonSpeed)
-        // this.dragon.setVelocityX(-this.dragonSpeed)
+        // this.player.anims.play("dragon-move", true)
+        if (this.moving) {
+            // Move the dragon left if it is to the right of the leftBound and has not reached x = 0
+            if (this.dragon.x < 900) {
+                this.dragon.setVelocityX(this.dragonSpeed);
+            } else if (this.dragon.x >= 900) {
+                this.dragon.setVelocityX(0); // Stop the dragon when it reaches the leftmost point
+                this.moving = false; // Stop moving left and get ready to move right
+            }
+        }
+        
+        if (!this.moving){
+          this.dragon.setVelocityX(-this.dragonSpeed)
+          if (this.dragon.x < 300){
+            this.moving=true
+        }
+        
+    }
+    
+        // if (this.dragon.x >= 0) {
+        //     this.dragon.x = 0; // Reset to exact origin to prevent overshooting
+        //     this.dragon.setVelocityX(-this.dragonSpeed); // Start moving left again
+        // }
     }
 }
