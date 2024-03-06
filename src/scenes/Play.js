@@ -16,13 +16,20 @@ class Play extends Phaser.Scene {
         this.dragon = this.physics.add.sprite(config.width / 3, config.height / 3, "dragon");
         this.dragon.setScale(.3)
 
+        //syringe
 
+        //smack
+
+        //zoom
         this.cursors = this.input.keyboard.createCursorKeys();
         this.horizontalSpeed = 1
         this.zoomSpeed = 0.001; // How quickly the camera zooms in
         this.maxZoom = 3; // Maximum zoom level
         this.defaultZoom = 1; // Normal zoom level
 
+        //use key
+        const keySpace = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.keySpace)
+        this.KeySpace = keySpace
     }
 
     update(){
@@ -37,8 +44,14 @@ class Play extends Phaser.Scene {
         }
         this.dragonmove()
 
+        //use ke
+        // if (Phaser.Input.Keyboard.JustDown(this.KeySpace) && sCount > 0){
+        //     this.hands.anims.play("use", true)
+        //     sCount-=1
+        //}
     }
 
+    //functions
     zoom(){
         let currentZoom = this.cameras.main.zoom;
         let newZoom = Phaser.Math.Clamp(currentZoom + this.zoomSpeed, this.defaultZoom, this.maxZoom);
@@ -49,7 +62,6 @@ class Play extends Phaser.Scene {
         this.dragonSpeed = 200
         // this.player.anims.play("dragon-move", true)
         if (this.moving) {
-            // Move the dragon left if it is to the right of the leftBound and has not reached x = 0
             if (this.dragon.x < 900) {
                 this.dragon.setVelocityX(this.dragonSpeed);
             } else if (this.dragon.x >= 900) {
@@ -62,13 +74,7 @@ class Play extends Phaser.Scene {
           this.dragon.setVelocityX(-this.dragonSpeed)
           if (this.dragon.x < 300){
             this.moving=true
-        }
-        
-    }
-    
-        // if (this.dragon.x >= 0) {
-        //     this.dragon.x = 0; // Reset to exact origin to prevent overshooting
-        //     this.dragon.setVelocityX(-this.dragonSpeed); // Start moving left again
-        // }
+            }
+        }   
     }
 }
