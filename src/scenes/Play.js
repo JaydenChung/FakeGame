@@ -1,6 +1,7 @@
 class Play extends Phaser.Scene {
     constructor() {
-        super("play_scene")
+        super("play_scene");
+        this.isJumping = false;
     }
 
     preload(){
@@ -15,6 +16,24 @@ class Play extends Phaser.Scene {
         //dragon
         this.dragon = this.physics.add.sprite(config.width / 3, config.height / 3, "dragon");
         this.dragon.setScale(.3)
+
+        //dragon tween
+        // let dragonTween = this.tweens.chain({
+        //     targets: this.dragon,
+        //     loop: 1,
+        //     paused: false,
+        //     tweens: [
+        //         {
+        //             x: gameWidth - 500,
+        //             duration: 1000,
+        //             angle: 15
+        //         },
+        //         { x: 1000,
+        //             duration: 1500,
+        //             angle: 0
+        //         }
+        //     ]
+        // })
 
         //syringe
 
@@ -42,6 +61,9 @@ class Play extends Phaser.Scene {
             this.background.tilePositionX += this.horizontalSpeed;
             this.zoom()
         }
+        if (this.cursors.up.isDown){
+            this.jump_simulation()
+        }
         this.dragonmove()
 
         //use ke
@@ -59,7 +81,7 @@ class Play extends Phaser.Scene {
     }
     
     dragonmove(){
-        this.dragonSpeed = 200
+        this.dragonSpeed = Phaser.Math.Between(150, 400)
         // this.player.anims.play("dragon-move", true)
         if (this.moving) {
             if (this.dragon.x < 900) {
@@ -69,6 +91,10 @@ class Play extends Phaser.Scene {
                 this.moving = false; // Stop moving left and get ready to move right
             }
         }
+        else{
+            this.dragon.setVelocityX(0);
+        }
+        
         
         if (!this.moving){
           this.dragon.setVelocityX(-this.dragonSpeed)
@@ -76,5 +102,40 @@ class Play extends Phaser.Scene {
             this.moving=true
             }
         }   
+        else{
+            this.dragon.setVelocityX(0);
+        }
+    }
+
+    jump_simulation() {
+        this.jumpPeak = 30; // The peak height of the jump
+        this.jumpSpeed = 1; // How fast the jump happens
+        if (!this.isJumping) {
+            this.isJumping = true;
+            let peakReached = false;
+            let jumpStep = 35
+            this.time.addEvent({
+                loop: true,
+                callback: () => {
+                    if (!peakReached) {
+                        this.background.tilePositionY += jumpStep;
+                        if (jumpStep <= this.jumpPeak) {
+                            peakReached = true;
+                        }
+                    } else {
+                        this.background.tilePositionY -= jumpStep;
+                        if (this.background.tilePositionY <= 0) {
+                            this.background.tilePositionY = 0;
+                            this.isJumping = false;
+                            peakReached = false;
+                            jumpStep = this.jumpSpeed; // Reset for next jump
+                            this.time.removeAllEvents(); // Stop the jumping loop
+                        }
+                    }
+                    jumpStep *= 0.98; // Decrement to simulate gravity
+                },
+                delay: 20 // Adjust for faster or slower animation
+            });
+        }
     }
 }
