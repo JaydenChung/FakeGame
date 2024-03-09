@@ -10,6 +10,6 @@ var config = {
             debug: true,
         }
     },
-    scene: [Play] 
+    scene: [Load, Play] 
 }
 var game = new Phaser.Game(config)
