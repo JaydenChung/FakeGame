@@ -2,12 +2,17 @@ class Play extends Phaser.Scene {
     constructor() {
         super("play_scene");
         this.isJumping = false;
+        this.smackCount = 0;
     }
  
     preload(){
         this.load.image("background", "assets/fake_background.png")
         this.load.image("dragon", "assets/dragon.png")
         this.load.image("border", "assets/border.png")
+
+        //audio
+        this.load.audio("HeartBeat", "assets/HeartBeat.wav")
+        this.load.audio("game", "assets/game.wav")
     }   
     create(){
         const gameWidth = this.cameras.main.width;
@@ -26,34 +31,44 @@ class Play extends Phaser.Scene {
         this.dragon = this.physics.add.sprite(config.width / 3, config.height / 3, "dragon");
         this.dragon.setScale(.3)
 
-        this.hands = this.add.sprite(config.width / 2, config.height/ 1.1, 'hands'); 
-        this.hands.setScale(13)
+        this.arms = this.add.sprite(config.width / 2, config.height/ 1.2, 'arms'); 
+        this.arms.setScale(12)
 
         this.border = this.add.sprite(config.width / 2, config.height/ 2, 'border');
-
-        
-
-        //dragon tween
-        // let dragonTween = this.tweens.chain({
-        //     targets: this.dragon,
-        //     loop: 1,
-        //     paused: false,
-        //     tweens: [
-        //         {
-        //             x: gameWidth - 500,
-        //             duration: 1000,
-        //             angle: 15
-        //         },
-        //         { x: 1000,
-        //             duration: 1500,
-        //             angle: 0
-        //         }
-        //     ]
-        // })
-
         //syringe
 
         //smack
+
+        //dragon tween
+        const timeline = this.tweens.timeline({
+            loop: -1, 
+            tweens: [
+                {
+                    targets: this.dragon,
+                    x: gameWidth - 300, // Assuming gameWidth is defined
+                    duration: 2000,
+                    angle: 20  
+                },
+                {
+                    targets: this.dragon,
+                    x: gameWidth-600,
+                    duration: 1000,
+                    angle: 0
+                },
+                {
+                    targets: this.dragon,
+                    x: this.dragon.x-200,
+                    duration: 1500,
+                    angle: -15
+                },
+                {
+                    targets: this.dragon,
+                    x: this.dragon.x,
+                    duration: 1000,
+                    angle: 0
+                }
+            ]
+        });
 
         //zoom
         this.cursors = this.input.keyboard.createCursorKeys();
@@ -67,9 +82,15 @@ class Play extends Phaser.Scene {
         //use key
         const keySpace = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.keySpace)
         this.KeySpace = keySpace
+
+        //audio
+        this.game = this.sound.add("game")
+        this.game.play()
+        this.HeartBeat = this.sound.add("HeartBeat", {loop: true}, {volume: 50})
     }
 
     update(){
+
         if (this.cursors.left.isDown) {
             this.background.tilePositionX -= this.horizontalSpeed;
         }
@@ -78,19 +99,20 @@ class Play extends Phaser.Scene {
             this.background.tilePositionX += this.horizontalSpeed;
         }
         if (this.cursors.up.isDown){
-            // arm.anims.play('run')
             this.forward()
+            this.HeartBeat.stop()
         }
         if (this.cursors.down.isDown){
-            this.hands.anims.play('use', true);
+            this.arms.anims.play('use', true);
             this.forward()
         }
 
-        this.dragonmove()
+        // this.dragonmove()
 
         //arms tween
         if (Phaser.Input.Keyboard.JustDown(this.spaceBar)) {
-            this.hands.anims.play('use', true);
+            this.arms.anims.play('use', true);
+            this.HeartBeat.play()
             
             let newZoom = Math.min(this.currentZoom + this.zoomIncrement);
 
@@ -104,6 +126,8 @@ class Play extends Phaser.Scene {
                 },
                 onComplete: () => {
                     this.currentZoom = newZoom;
+                    this.cameras.main.shake(5000, .0005)
+                    this.arms.anims.play('run')
 
                 }
             });

@@ -6,25 +6,14 @@ class Load extends Phaser.Scene {
         this.load.path = './assets/'
 
         //preload anims
-        // this.load.spritesheet('dragon', 'dragon-sheet.png', {
-        //     frameWidth: 32,
-        //     frameHeight: 32
-        // })
 
-        this.load.spritesheet('hands', 'arms.png', {
-            frameWidth: 64,
-            frameHeight: 64
+        this.load.spritesheet('arms', 'arms_spritesheet.png', {
+            frameWidth: 62.5,
+            frameHeight: 40
         })
-
-        this.load.spritesheet('arm', 'arms_running.png', {
-            frameWidth: 64,
-            frameHeight: 64
-        })
-
-        //preload audio
-
     }
     create(){
+        
         this.anims.create({
             key:"dragon-move",
             framerate: 8,
@@ -44,14 +33,14 @@ class Load extends Phaser.Scene {
             key: "use",
             frameRate: 4,
             repeat: 0,
-            frames: this.anims.generateFrameNumbers('hands', {start: 0, end: 4}),
+            frames: this.anims.generateFrameNumbers('arms', {start: 4, end: 7}),
         });
         
         this.anims.create({
             key: "run",
-            frameRate: 4,
+            frameRate: 6,
             repeat: -1,
-            frames: this.anims.generateFrameNumbers('arm', {start: 0, end: 4}),
+            frames: this.anims.generateFrameNumbers('arms', {start: 3, end: 0}),
         });
         
         

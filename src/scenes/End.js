@@ -1,11 +1,15 @@
-// class End extends Phaser.Scene{
-//     constructor(){
-//         super("gameOverScene")
-//     }
-//     preload(){
-//         this.load.image('gameOver', 'assets/gameover.png')
-//     }
-//     create(){
+class End extends Phaser.Scene{
+    constructor(){
+        super("gameOverScene")
+    }
+
+    preload(){
+    }
+    create(){
+        this.EndMusic = this.sound.add("EndMusic")
+        this.EndMusic.play()
+    }
+}
 //         //displaygameover
 //         const gameOverImage = this.add.image(0, 0, 'gameOver').setOrigin(0,0);
 
