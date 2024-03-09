@@ -58,7 +58,7 @@ class Play extends Phaser.Scene {
         //zoom
         this.cursors = this.input.keyboard.createCursorKeys();
         this.horizontalSpeed = 1
-        this.zoomSpeed = .1; // How quickly the camera zooms in
+        this.zoomSpeed = .01; // How quickly the camera zooms in
         this.maxZoom = 3; // Maximum zoom level
         this.defaultZoom = 1; // Normal zoom level
         this.currentZoom = 1; // Start with normal size
@@ -78,7 +78,7 @@ class Play extends Phaser.Scene {
             this.background.tilePositionX += this.horizontalSpeed;
         }
         if (this.cursors.up.isDown){
-            arm.anims.play('run')
+            // arm.anims.play('run')
             this.forward()
         }
         if (this.cursors.down.isDown){
@@ -108,8 +108,15 @@ class Play extends Phaser.Scene {
                 }
             });
         }
+        if (!this.cameras.main.worldView.contains(this.dragon.x, this.dragon.y)) {
+        // this.scene.start('gameOverScene')}
+        this.gameover()
+        }
     }
     //functions
+    gameover(){
+        console.log('gameOverScene')        
+    }
     forward(){
         let newZoom = Phaser.Math.Clamp(this.background.scaleX + this.zoomSpeed, this.defaultZoom, this.maxZoom);
         this.background.setScale(newZoom);
@@ -125,21 +132,13 @@ class Play extends Phaser.Scene {
                 this.dragon.setVelocityX(0); // Stop the dragon when it reaches the leftmost point
                 this.moving = false; // Stop moving left and get ready to move right
             }
-        }
-        else{
-            this.dragon.setVelocityX(0);
-        }
-        
-        
+        }    
         if (!this.moving){
           this.dragon.setVelocityX(-this.dragonSpeed)
           if (this.dragon.x < 300){
             this.moving=true
             }
         }   
-        else{
-            this.dragon.setVelocityX(0);
-        }
     }
 
     jump_simulation() {
