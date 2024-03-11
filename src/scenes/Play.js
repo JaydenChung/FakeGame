@@ -3,6 +3,8 @@ class Play extends Phaser.Scene {
         super("play_scene");
         this.isJumping = false;
         this.smackCount = 0;
+        this.shakeInc = 0.001; 
+        this.shakeAmount = 0.001; 
     }
  
     preload(){
@@ -112,23 +114,27 @@ class Play extends Phaser.Scene {
         //arms tween
         if (Phaser.Input.Keyboard.JustDown(this.spaceBar)) {
             this.arms.anims.play('use', true);
-            this.HeartBeat.play()
+            this.HeartBeat.play();
+
+            this.startColorShift();
+
             
             let newZoom = Math.min(this.currentZoom + this.zoomIncrement);
-
+            
+            // Increase the shake amount by the current increment
+            this.shakeAmount += this.shakeInc;
+        
             this.tweens.add({
                 targets: this.background,
-                scaleX: newZoom,//{ from: this.background.scaleX, to: 1.5 },
-                scaleY: newZoom, //from: this.background.scaleY, to: 1.5 },
+                scaleX: newZoom,
+                scaleY: newZoom,
                 duration: this.animationDuration,
                 ease: 'Linear',
-                onStart: () => {
-                },
                 onComplete: () => {
                     this.currentZoom = newZoom;
-                    this.cameras.main.shake(5000, .0005)
-                    this.arms.anims.play('run')
-
+                    this.cameras.main.shake(5000, this.shakeAmount); // Use updated shake amount here
+                    this.arms.anims.play('run');
+                    this.startWobbleEffect();
                 }
             });
         }
@@ -147,23 +153,21 @@ class Play extends Phaser.Scene {
     }
     
     dragonmove(){
-        this.dragonSpeed = Phaser.Math.Between(150, 400)
-        // this.player.anims.play("dragon-move", true)
-        if (this.moving) {
-            if (this.dragon.x < 900) {
-                this.dragon.setVelocityX(this.dragonSpeed);
-            } else if (this.dragon.x >= 900) {
-                this.dragon.setVelocityX(0); // Stop the dragon when it reaches the leftmost point
-                this.moving = false; // Stop moving left and get ready to move right
-            }
-        }    
-        if (!this.moving){
-          this.dragon.setVelocityX(-this.dragonSpeed)
-          if (this.dragon.x < 300){
-            this.moving=true
-            }
-        }   
+        const newX = Phaser.Math.Between(100, gameWidth - 100); 
+    const newDuration = Phaser.Math.Between(1000, 3000); 
+    const newAngle = Phaser.Math.Between(-20, 20); 
+
+    this.tweens.add({
+        targets: this.dragon,
+        x: newX,
+        duration: newDuration,
+        angle: newAngle,
+        onComplete: () => {
+            this.dragonmove(); 
+        }
+    });
     }
+
 
     jump_simulation() {
         this.jumpPeak = 30; // The peak height of the jump
@@ -193,6 +197,42 @@ class Play extends Phaser.Scene {
                     jumpStep *= 0.98; // Decrement to simulate gravity
                 },
                 delay: 20 // Adjust for faster or slower animation
+            });
+        }
+    }
+    startColorShift() {
+        if (!this.colorShiftTween) { // Check if the tween doesn't already exist
+            this.colorShiftTween = this.tweens.addCounter({
+                from: 0,
+                to: 100,
+                duration: 5000, // Duration of one complete color cycle
+                repeat: -1, // Loop indefinitely
+                onUpdate: tween => {
+                    const value = tween.getValue();
+                    const color = Phaser.Display.Color.Interpolate.ColorWithColor(
+                        Phaser.Display.Color.RGBStringToColor('#ff0000'), // Start color: Red
+                        Phaser.Display.Color.RGBStringToColor('#0000ff'), // End color: Blue
+                        100, // Steps
+                        value // Current step
+                    );
+                    this.cameras.main.setTint(Phaser.Display.Color.GetColor(color.r, color.g, color.b));
+                }
+            });
+        }
+    }
+    
+    startWobbleEffect() {
+        if (!this.wobbleTween) { // Check if the tween doesn't already exist
+            this.wobbleTween = this.tweens.add({
+                targets: { wobble: 0 },
+                props: { wobble: { value: 0.01, ease: 'Sine.easeInOut' } }, // The wobble angle in radians
+                duration: 500, // Half-period of one wobble
+                yoyo: true, // Go back and forth
+                repeat: -1, // Repeat indefinitely
+                onUpdate: tween => {
+                    const value = tween.getValue();
+                    this.cameras.main.setRotation(value); // Apply rotation based on tween value
+                }
             });
         }
     }
