@@ -3,8 +3,11 @@ class Play extends Phaser.Scene {
         super("play_scene");
         this.isJumping = false;
         this.smackCount = 0;
-        this.shakeInc = 0.001; 
+        this.shakeInc = 0.005; 
         this.shakeAmount = 0.001; 
+        this.scaleFactor = 0.999;
+        this.growing = false;
+        this.wobbleIntensity = 0.01 ;
     }
  
     preload(){
@@ -23,6 +26,11 @@ class Play extends Phaser.Scene {
         this.background.setPosition(gameWidth / 2, gameHeight / 2);
 
         this.spaceBar = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE);
+        
+        //score
+        this.score = 0;
+
+        this.scoreText = this.add.text(100, 32, `Syringe count: ${this.score}`, { fontSize: '32px', fill: '#fff' });
 
         // Animation details
         const animationFrameRate = 10; // Replace with your animation's frame rate
@@ -33,10 +41,11 @@ class Play extends Phaser.Scene {
         this.dragon = this.physics.add.sprite(config.width / 3, config.height / 3, "dragon");
         this.dragon.setScale(.3)
 
+
         this.arms = this.add.sprite(config.width / 2, config.height/ 1.2, 'arms'); 
         this.arms.setScale(12)
 
-        this.border = this.add.sprite(config.width / 2, config.height/ 2, 'border');
+        this.border = this.physics.add.sprite(config.width / 2, config.height/ 2, 'border');
         //syringe
 
         //smack
@@ -47,9 +56,9 @@ class Play extends Phaser.Scene {
             tweens: [
                 {
                     targets: this.dragon,
-                    x: gameWidth - 300, // Assuming gameWidth is defined
-                    duration: 2000,
-                    angle: 20  
+                    angle: 30,  
+                    x: gameWidth + 10, // Assuming gameWidth is defined
+                    duration: 3000,
                 },
                 {
                     targets: this.dragon,
@@ -92,6 +101,12 @@ class Play extends Phaser.Scene {
     }
 
     update(){
+        if (!this.growing){
+        this.dragon.setScale(this.dragon.scaleX * this.scaleFactor, this.dragon.scaleY * this.scaleFactor);
+        }
+        else if(this.growing){
+            this.dragon.setScale(this.dragon.scaleX / this.scaleFactor *1.001, this.dragon.scaleY / this.scaleFactor*1.001);
+        }
 
         if (this.cursors.left.isDown) {
             this.background.tilePositionX -= this.horizontalSpeed;
@@ -130,23 +145,29 @@ class Play extends Phaser.Scene {
                 scaleY: newZoom,
                 duration: this.animationDuration,
                 ease: 'Linear',
+                onStart: () => {
+                    this.growing = true
+
+                    this.dragon.setTint(0xff0000);
+                },
                 onComplete: () => {
                     this.currentZoom = newZoom;
-                    this.cameras.main.shake(5000, this.shakeAmount); // Use updated shake amount here
+                    this.cameras.main.shake(50000, this.shakeAmount); // Use updated shake amount here
+                    this.dragon.clearTint();
                     this.arms.anims.play('run');
                     this.startWobbleEffect();
+                    this.increaseScore();
+                    this.growing = false
                 }
             });
         }
+
+        //collision
         if (!this.cameras.main.worldView.contains(this.dragon.x, this.dragon.y)) {
-        // this.scene.start('gameOverScene')}
-        this.gameover()
+        this.handleCollision()
         }
     }
     //functions
-    gameover(){
-        console.log('gameOverScene')        
-    }
     forward(){
         let newZoom = Phaser.Math.Clamp(this.background.scaleX + this.zoomSpeed, this.defaultZoom, this.maxZoom);
         this.background.setScale(newZoom);
@@ -222,18 +243,27 @@ class Play extends Phaser.Scene {
     }
     
     startWobbleEffect() {
-        if (!this.wobbleTween) { // Check if the tween doesn't already exist
+        if (!this.wobbleTween) {
             this.wobbleTween = this.tweens.add({
-                targets: { wobble: 0 },
-                props: { wobble: { value: 0.01, ease: 'Sine.easeInOut' } }, // The wobble angle in radians
-                duration: 500, // Half-period of one wobble
-                yoyo: true, // Go back and forth
-                repeat: -1, // Repeat indefinitely
+                targets: this, // Change targets to this scene
+                wobbleIntensity: { from: -this.wobbleIntensity, to: this.wobbleIntensity },
+                duration: 1000,
+                yoyo: true,
+                repeat: -1,
                 onUpdate: tween => {
-                    const value = tween.getValue();
-                    this.cameras.main.setRotation(value); // Apply rotation based on tween value
+                    this.cameras.main.setRotation(tween.getValue()); // Apply rotation based on tween value
                 }
             });
-        }
+        }  
     }
+    
+
+    handleCollision(){
+        console.log('gameOverScene') 
+    }
+
+    increaseScore() {
+        this.score += 1;
+        this.scoreText.setText(`Syringe count: ${this.score}`);
+      }
 }
