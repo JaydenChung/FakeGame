@@ -5,10 +5,11 @@ class Play extends Phaser.Scene {
         this.isJumping = false;
         this.growing = false;
         this.smackCount = 0;
-        this.shakeInc = 0.001; 
-        this.shakeAmount = 0.001; 
+        this.shakeAmount = 0; 
+        this.shakeDuration = 0
+        this.wobbleAmount = .0
+        this.wobbleDuration = 1000
         this.scaleFactor = 0.998;
-        this.wobbleIntensity = 0.01 ;
 
         
     }
@@ -131,7 +132,6 @@ class Play extends Phaser.Scene {
             let newZoom = Math.min(this.currentZoom + this.zoomIncrement);
             
             // Increase the shake amount by the current increment
-            this.shakeAmount += this.shakeInc;
         
             this.tweens.add({
                 targets: this.background,
@@ -142,46 +142,46 @@ class Play extends Phaser.Scene {
                 onStart: () => {
                     this.gameStart = true
                     this.growing = true
-
-                    const timeline = this.tweens.timeline({
-                        loop: -1, 
-                        tweens: [
-                            {
-                                targets: this.dragon,
-                                angle: 30,  
-                                x: this.dragon.x + 600,
-                                duration: 3000,
-                            },
-                            {
-                                targets: this.dragon,
-                                x: this.dragon.x,
-                                duration: 1000,
-                                angle: 0
-                            },
-                            {
-                                targets: this.dragon,
-                                x: this.dragon.x-200,
-                                duration: 1500,
-                                angle: -15
-                            },
-                            {
-                                targets: this.dragon,
-                                x: this.dragon.x,
-                                duration: 1000,
-                                angle: 0
-                            }
-                        ]
-                    });
-
                     
+
+                    // const timeline = this.tweens.timeline({
+                    //     loop: -1, 
+                    //     tweens: [
+                    //         {
+                    //             targets: this.dragon,
+                    //             angle: 30,  
+                    //             x: this.dragon.x + 600,
+                    //             duration: 3000,
+                    //         },
+                    //         {
+                    //             targets: this.dragon,
+                    //             x: this.dragon.x,
+                    //             duration: 1000,
+                    //             angle: 0
+                    //         },
+                    //         {
+                    //             targets: this.dragon,
+                    //             x: this.dragon.x-200,
+                    //             duration: 1500,
+                    //             angle: -15
+                    //         },
+                    //         {
+                    //             targets: this.dragon,
+                    //             x: this.dragon.x,
+                    //             duration: 1000,
+                    //             angle: 0
+                    //         }
+                    //     ]
+                    // });
+
                     //this.dragon.setTint(0xff0000);
                 },
                 onComplete: () => {
+                    this.shake()
+                    this.wobble()
                     this.currentZoom = newZoom;
-                    this.cameras.main.shake(50000, this.shakeAmount); // Use updated shake amount here
                     this.dragon.clearTint();
                     this.arms.anims.play('run');
-                    this.startWobbleEffect();
                     this.increaseScore();
                     this.growing = false
                     this.isJumping = false
@@ -193,9 +193,6 @@ class Play extends Phaser.Scene {
 
         if (this.score == 2 ){
             this.horizontalSpeed = 3
-            this.shakeAmount = .005
-            this.shakeInc = .005
-            this.wobbleIntensity = 0.03
         }
         else if(this.score == 3){
             this.horizontalSpeed = 5
@@ -273,22 +270,6 @@ class Play extends Phaser.Scene {
             });
         }
     }
-    
-    startWobbleEffect() {
-        if (!this.wobbleTween) {
-            this.wobbleTween = this.tweens.add({
-                targets: this, // Change targets to this scene
-                wobbleIntensity: { from: -this.wobbleIntensity, to: this.wobbleIntensity },
-                duration: 1000,
-                yoyo: true,
-                repeat: -1,
-                onUpdate: tween => {
-                    this.cameras.main.setRotation(tween.getValue()); // Apply rotation based on tween value
-                }
-            });
-        }  
-    }
-    
 
     end(){
         this.scene.start('gameOverScene') 
@@ -298,4 +279,44 @@ class Play extends Phaser.Scene {
         this.score += 1;
         this.scoreText.setText(`Smack count: ${this.score}`);
       }
+    
+    shake(){
+        if(this.shakeAmount < .3){
+            this.shakeAmount += 0.004; // Adjust the increment as needed
+        }
+        if (this.shakeDuration < 9000){
+            this.shakeDuration += 1500
+        }
+        // Now apply the shake with the updated amount
+        this.cameras.main.shake(this.shakeDuration, this.shakeAmount)
+        
+
+        // Log the current shake amount for debugging purposes
+        console.log(`Current shake amount: ${this.shakeAmount}`);
+    }
+
+    wobble(){
+        if (this.wobbleAmount < .26){
+            this.wobbleAmount +=.05
+        }
+        if (this.wobbleDuration > 100){
+            this.wobbleDuration -= 100
+        }
+        this.wobbleTween = this.tweens.add({
+                targets: this, // Change targets to this scene
+                wobbleIntensity: { from: -this.wobbleAmount, to: this.wobbleAmount },
+                duration: this.wobbleDuration,
+                yoyo: true,
+                repeat: -1,
+                onUpdate: tween => {   
+                    this.cameras.main.setRotation(tween.getValue()); 
+
+                    if (this.border) {
+                        this.border.setRotation(-tween.getValue());
+                    }
+                },
+            });
+            console.log(`Current wobble amount: ${this.wobbleAmount}`)
+    }
+
 }
