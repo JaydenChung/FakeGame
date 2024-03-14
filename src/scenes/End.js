@@ -8,16 +8,16 @@ class End extends Phaser.Scene{
     create(){
         this.EndMusic = this.sound.add("EndMusic")
         this.EndMusic.play()
-    }
-}
 //         //displaygameover
 //         const gameOverImage = this.add.image(0, 0, 'gameOver').setOrigin(0,0);
 
-//         this.add.text(this.game.config.width-250, 350, 'You Lost', {
-//             fontSize: '62px',
-//             fill: '#fff',
-//             align: 'center'
-//           }).setOrigin(1, 0);
+        this.add.text(this.game.config.width-250, 350, 'The dragon got away :(', {
+            fontSize: '62px',
+            fill: '#fff',
+            align: 'center'
+          }).setOrigin(1, 0);
+    }
+}
 
 //           this.add.text(this.game.config.width - 20, 20, 'Press R to Restart', {
 //             fontSize: '32px',

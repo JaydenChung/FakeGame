@@ -1,28 +1,31 @@
 class Play extends Phaser.Scene {
     constructor() {
         super("play_scene");
+        this.gameStart = false
         this.isJumping = false;
-        this.smackCount = 0;
-        this.shakeInc = 0.005; 
-        this.shakeAmount = 0.001; 
-        this.scaleFactor = 0.999;
         this.growing = false;
+        this.smackCount = 0;
+        this.shakeInc = 0.001; 
+        this.shakeAmount = 0.001; 
+        this.scaleFactor = 0.998;
         this.wobbleIntensity = 0.01 ;
+
+        
     }
  
     preload(){
-        this.load.image("background", "assets/fake_background.png")
+        this.load.image("background", "assets/background.png")
         this.load.image("dragon", "assets/dragon.png")
-        this.load.image("border", "assets/border.png")
-
-        //audio
+        this.load.image("border", "assets/border.png") 
+        this.load.image("smack", "assets/smack.png");
+        //audio 
         this.load.audio("HeartBeat", "assets/HeartBeat.wav")
         this.load.audio("game", "assets/game.wav")
     }   
     create(){
         const gameWidth = this.cameras.main.width;
         const gameHeight = this.cameras.main.height;
-        this.background = this.add.tileSprite(0, 0, gameWidth, gameHeight, 'background').setOrigin(0.5, 0.5);
+        this.background = this.add.tileSprite(0, 0, gameWidth, gameHeight, 'background').setOrigin(.5, .5);
         this.background.setPosition(gameWidth / 2, gameHeight / 2);
 
         this.spaceBar = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE);
@@ -30,57 +33,30 @@ class Play extends Phaser.Scene {
         //score
         this.score = 0;
 
-        this.scoreText = this.add.text(100, 32, `Syringe count: ${this.score}`, { fontSize: '32px', fill: '#fff' });
+        this.scoreText = this.add.text(110, 32, `Smack count: ${this.score}`, { fontSize: '32px', fill: '#fff' });
 
         // Animation details
-        const animationFrameRate = 10; // Replace with your animation's frame rate
-        const animationFrameCount = 10; // Replace with your animation's frame count
-        this.animationDuration = (animationFrameCount / animationFrameRate) * 1000; // Duration in millisecond}
+        this.animationDuration = (10 / 10) * 1000; // Duration in millisecond}
 
         //dragon
-        this.dragon = this.physics.add.sprite(config.width / 3, config.height / 3, "dragon");
+        this.dragon = this.physics.add.sprite(300, 200, "dragon");
         this.dragon.setScale(.3)
+        this.dragonSpeed = 100;
 
 
-        this.arms = this.add.sprite(config.width / 2, config.height/ 1.2, 'arms'); 
-        this.arms.setScale(12)
+        this.arms = this.add.sprite(config.width / 2, config.height/ 1.15, 'arms'); 
+        this.arms.setScale(10)
+        this.arms.setScrollFactor(0);
 
-        this.border = this.physics.add.sprite(config.width / 2, config.height/ 2, 'border');
+        this.border = this.add.sprite(config.width / 2, config.height/2, 'border');
+        this.border.scaleY = 1.2
+        this.border.setScrollFactor(0);
         //syringe
 
         //smack
-
-        //dragon tween
-        const timeline = this.tweens.timeline({
-            loop: -1, 
-            tweens: [
-                {
-                    targets: this.dragon,
-                    angle: 30,  
-                    x: gameWidth + 10, // Assuming gameWidth is defined
-                    duration: 3000,
-                },
-                {
-                    targets: this.dragon,
-                    x: gameWidth-600,
-                    duration: 1000,
-                    angle: 0
-                },
-                {
-                    targets: this.dragon,
-                    x: this.dragon.x-200,
-                    duration: 1500,
-                    angle: -15
-                },
-                {
-                    targets: this.dragon,
-                    x: this.dragon.x,
-                    duration: 1000,
-                    angle: 0
-                }
-            ]
-        });
-
+        this.smack = this.add.sprite(config.width / 1.15, config.height/ 1.3, 'smack'); 
+        this.smack.setScale(.5)
+        this.smack.setScrollFactor(0)
         //zoom
         this.cursors = this.input.keyboard.createCursorKeys();
         this.horizontalSpeed = 1
@@ -98,9 +74,19 @@ class Play extends Phaser.Scene {
         this.game = this.sound.add("game")
         this.game.play()
         this.HeartBeat = this.sound.add("HeartBeat", {loop: true}, {volume: 50})
+
+
+
+        //dragon tween
+        //state machine for dragon
+        //get world point
+        //physics
+
     }
 
     update(){
+        
+        
         if (!this.growing){
         this.dragon.setScale(this.dragon.scaleX * this.scaleFactor, this.dragon.scaleY * this.scaleFactor);
         }
@@ -108,14 +94,24 @@ class Play extends Phaser.Scene {
             this.dragon.setScale(this.dragon.scaleX / this.scaleFactor *1.001, this.dragon.scaleY / this.scaleFactor*1.001);
         }
 
-        if (this.cursors.left.isDown) {
-            this.background.tilePositionX -= this.horizontalSpeed;
-        }
+        // if (this.cursors.left.isDown) {
+        //     this.background.tilePositionX -= this.horizontalSpeed;
+        // }
     
-        if (this.cursors.right.isDown) {
-            this.background.tilePositionX += this.horizontalSpeed;
+        // if (this.cursors.right.isDown) {
+        //     this.background.tilePositionX += this.horizontalSpeed;
+        // }
+
+        if (this.cursors.left.isDown) {
+            this.cameras.main.scrollX -= this.horizontalSpeed;
         }
+        if (this.cursors.right.isDown) {
+            this.cameras.main.scrollX += this.horizontalSpeed;
+        }
+
+
         if (this.cursors.up.isDown){
+            //this.jump_simulation()
             this.forward()
             this.HeartBeat.stop()
         }
@@ -127,13 +123,11 @@ class Play extends Phaser.Scene {
         // this.dragonmove()
 
         //arms tween
-        if (Phaser.Input.Keyboard.JustDown(this.spaceBar)) {
+        if (Phaser.Input.Keyboard.JustDown(this.spaceBar) && this.isJumping == false) {
+            this.isJumping = true
             this.arms.anims.play('use', true);
             this.HeartBeat.play();
 
-            this.startColorShift();
-
-            
             let newZoom = Math.min(this.currentZoom + this.zoomIncrement);
             
             // Increase the shake amount by the current increment
@@ -146,9 +140,41 @@ class Play extends Phaser.Scene {
                 duration: this.animationDuration,
                 ease: 'Linear',
                 onStart: () => {
+                    this.gameStart = true
                     this.growing = true
 
-                    this.dragon.setTint(0xff0000);
+                    const timeline = this.tweens.timeline({
+                        loop: -1, 
+                        tweens: [
+                            {
+                                targets: this.dragon,
+                                angle: 30,  
+                                x: this.dragon.x + 600,
+                                duration: 3000,
+                            },
+                            {
+                                targets: this.dragon,
+                                x: this.dragon.x,
+                                duration: 1000,
+                                angle: 0
+                            },
+                            {
+                                targets: this.dragon,
+                                x: this.dragon.x-200,
+                                duration: 1500,
+                                angle: -15
+                            },
+                            {
+                                targets: this.dragon,
+                                x: this.dragon.x,
+                                duration: 1000,
+                                angle: 0
+                            }
+                        ]
+                    });
+
+                    
+                    //this.dragon.setTint(0xff0000);
                 },
                 onComplete: () => {
                     this.currentZoom = newZoom;
@@ -158,13 +184,39 @@ class Play extends Phaser.Scene {
                     this.startWobbleEffect();
                     this.increaseScore();
                     this.growing = false
+                    this.isJumping = false
+
                 }
             });
+
+        }
+
+        if (this.score == 2 ){
+            this.horizontalSpeed = 3
+            this.shakeAmount = .005
+            this.shakeInc = .005
+            this.wobbleIntensity = 0.03
+        }
+        else if(this.score == 3){
+            this.horizontalSpeed = 5
+        }
+        else if(this.score == 4){
+            this.horizontalSpeed = 7
+        }
+        else if(this.score == 5){
+            this.horizontalSpeed = 9
+        }
+        else if(this.score == 6){
+            this.horizontalSpeed = 11
         }
 
         //collision
         if (!this.cameras.main.worldView.contains(this.dragon.x, this.dragon.y)) {
-        this.handleCollision()
+        this.end()
+        }
+
+        if (this.dragon.scaleY < .1) {
+            this.end()
         }
     }
     //functions
@@ -191,7 +243,7 @@ class Play extends Phaser.Scene {
 
 
     jump_simulation() {
-        this.jumpPeak = 30; // The peak height of the jump
+        this.jumpPeak = -30; // The peak height of the jump
         this.jumpSpeed = 1; // How fast the jump happens
         if (!this.isJumping) {
             this.isJumping = true;
@@ -221,26 +273,6 @@ class Play extends Phaser.Scene {
             });
         }
     }
-    startColorShift() {
-        if (!this.colorShiftTween) { // Check if the tween doesn't already exist
-            this.colorShiftTween = this.tweens.addCounter({
-                from: 0,
-                to: 100,
-                duration: 5000, // Duration of one complete color cycle
-                repeat: -1, // Loop indefinitely
-                onUpdate: tween => {
-                    const value = tween.getValue();
-                    const color = Phaser.Display.Color.Interpolate.ColorWithColor(
-                        Phaser.Display.Color.RGBStringToColor('#ff0000'), // Start color: Red
-                        Phaser.Display.Color.RGBStringToColor('#0000ff'), // End color: Blue
-                        100, // Steps
-                        value // Current step
-                    );
-                    this.cameras.main.setTint(Phaser.Display.Color.GetColor(color.r, color.g, color.b));
-                }
-            });
-        }
-    }
     
     startWobbleEffect() {
         if (!this.wobbleTween) {
@@ -258,12 +290,12 @@ class Play extends Phaser.Scene {
     }
     
 
-    handleCollision(){
-        console.log('gameOverScene') 
+    end(){
+        this.scene.start('gameOverScene') 
     }
 
     increaseScore() {
         this.score += 1;
-        this.scoreText.setText(`Syringe count: ${this.score}`);
+        this.scoreText.setText(`Smack count: ${this.score}`);
       }
 }

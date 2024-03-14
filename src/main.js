@@ -2,7 +2,7 @@ var config = {
     type: Phaser.AUTO,
     width: 1300,
     height: 650,
-    zoom: 1.1,
+    zoom: 1,
     physics: {
         default: "arcade",
         arcade: {
@@ -10,6 +10,6 @@ var config = {
             debug: true,
         }
     },
-    scene: [Load, Play] 
+    scene: [Load, Play, End] 
 }
 var game = new Phaser.Game(config)
