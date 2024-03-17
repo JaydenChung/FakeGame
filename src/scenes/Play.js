@@ -7,9 +7,9 @@ class Play extends Phaser.Scene {
         this.smackCount = 0;
         this.shakeAmount = 0; 
         this.shakeDuration = 0
-        this.wobbleAmount = .0
+        this.wobbleAmount = 0
         this.wobbleDuration = 1000
-        this.scaleFactor = 0.998;
+        this.scaleFactor = 0.997;
 
         
     }
@@ -40,9 +40,11 @@ class Play extends Phaser.Scene {
         this.animationDuration = (10 / 10) * 1000; // Duration in millisecond}
 
         //dragon
-        this.dragon = this.physics.add.sprite(300, 200, "dragon");
+        this.dragon = this.add.sprite(400, 200, "dragon");
         this.dragon.setScale(.3)
-        this.dragonSpeed = 100;
+        this.isMoving = true;
+        this.moveDirection = 1;
+        this.dragonmove()
 
 
         this.arms = this.add.sprite(config.width / 2, config.height/ 1.15, 'arms'); 
@@ -78,30 +80,24 @@ class Play extends Phaser.Scene {
 
 
 
-        //dragon tween
-        //state machine for dragon
-        //get world point
-        //physics
-
     }
 
-    update(){
-        
-        
-        if (!this.growing){
-        this.dragon.setScale(this.dragon.scaleX * this.scaleFactor, this.dragon.scaleY * this.scaleFactor);
+    update(time, delta){
+        if (this.isMoving) {
+            this.dragon.x += this.moveDirection * (this.horizontalSpeed * 20) * (delta / 1000);
+            // console.log(this.dragon.x)
         }
-        else if(this.growing){
+
+        if(this.isMoving == 0){
+            this.dragon.setScale(this.dragon.scaleX * this.scaleFactor, this.dragon.scaleY * this.scaleFactor);
+        }
+        //this.dragon.x = Phaser.Math.Clamp(this.dragon.x, 0, this.game.config.width);
+
+        
+        if(this.growing){
             this.dragon.setScale(this.dragon.scaleX / this.scaleFactor *1.001, this.dragon.scaleY / this.scaleFactor*1.001);
         }
 
-        // if (this.cursors.left.isDown) {
-        //     this.background.tilePositionX -= this.horizontalSpeed;
-        // }
-    
-        // if (this.cursors.right.isDown) {
-        //     this.background.tilePositionX += this.horizontalSpeed;
-        // }
 
         if (this.cursors.left.isDown) {
             this.cameras.main.scrollX -= this.horizontalSpeed;
@@ -121,7 +117,6 @@ class Play extends Phaser.Scene {
             this.forward()
         }
 
-        // this.dragonmove()
 
         //arms tween
         if (Phaser.Input.Keyboard.JustDown(this.spaceBar) && this.isJumping == false) {
@@ -144,41 +139,12 @@ class Play extends Phaser.Scene {
                     this.growing = true
                     
 
-                    // const timeline = this.tweens.timeline({
-                    //     loop: -1, 
-                    //     tweens: [
-                    //         {
-                    //             targets: this.dragon,
-                    //             angle: 30,  
-                    //             x: this.dragon.x + 600,
-                    //             duration: 3000,
-                    //         },
-                    //         {
-                    //             targets: this.dragon,
-                    //             x: this.dragon.x,
-                    //             duration: 1000,
-                    //             angle: 0
-                    //         },
-                    //         {
-                    //             targets: this.dragon,
-                    //             x: this.dragon.x-200,
-                    //             duration: 1500,
-                    //             angle: -15
-                    //         },
-                    //         {
-                    //             targets: this.dragon,
-                    //             x: this.dragon.x,
-                    //             duration: 1000,
-                    //             angle: 0
-                    //         }
-                    //     ]
-                    // });
-
-                    //this.dragon.setTint(0xff0000);
                 },
                 onComplete: () => {
                     this.shake()
                     this.wobble()
+                    this.speed()
+                    console.log(`Current horizontal speed: ${this.horizontalSpeed}`)
                     this.currentZoom = newZoom;
                     this.dragon.clearTint();
                     this.arms.anims.play('run');
@@ -188,28 +154,11 @@ class Play extends Phaser.Scene {
 
                 }
             });
-
         }
-
-        if (this.score == 2 ){
-            this.horizontalSpeed = 3
-        }
-        else if(this.score == 3){
-            this.horizontalSpeed = 5
-        }
-        else if(this.score == 4){
-            this.horizontalSpeed = 7
-        }
-        else if(this.score == 5){
-            this.horizontalSpeed = 9
-        }
-        else if(this.score == 6){
-            this.horizontalSpeed = 11
-        }
-
+        
         //collision
-        if (!this.cameras.main.worldView.contains(this.dragon.x, this.dragon.y)) {
-        this.end()
+        if (!this.cameras.main.worldView.contains(this.dragon.x+200, this.dragon.y+100)) {
+            this.end()
         }
 
         if (this.dragon.scaleY < .1) {
@@ -223,19 +172,17 @@ class Play extends Phaser.Scene {
     }
     
     dragonmove(){
-        const newX = Phaser.Math.Between(100, gameWidth - 100); 
-    const newDuration = Phaser.Math.Between(1000, 3000); 
-    const newAngle = Phaser.Math.Between(-20, 20); 
-
-    this.tweens.add({
-        targets: this.dragon,
-        x: newX,
-        duration: newDuration,
-        angle: newAngle,
-        onComplete: () => {
-            this.dragonmove(); 
-        }
-    });
+        this.time.addEvent({
+            delay: Phaser.Math.Between(1000, 2000),
+            callback: () => {
+                this.isMoving = Phaser.Math.Between(0, 1) === 1;
+                if (this.isMoving) {
+                    this.moveDirection = Phaser.Math.Between(0, 1) === 1 ? 1 : -1;
+                }
+                this.dragonmove();
+            },
+            callbackScope: this
+        });
     }
 
 
@@ -296,8 +243,11 @@ class Play extends Phaser.Scene {
     }
 
     wobble(){
-        if (this.wobbleAmount < .26){
-            this.wobbleAmount +=.05
+        if (this.wobbleAmount == 0){
+            this.wobbleAmount +=.01
+        }
+        else if (this.wobbleAmount > 0 && this.wobbleAmount < .3){
+            this.wobbleAmount += .03
         }
         if (this.wobbleDuration > 100){
             this.wobbleDuration -= 100
@@ -317,6 +267,18 @@ class Play extends Phaser.Scene {
                 },
             });
             console.log(`Current wobble amount: ${this.wobbleAmount}`)
+    }
+
+    speed(){
+        if (this.horizontalSpeed < 2){
+            this.horizontalSpeed += 4
+        }
+        else if(this.horizontalSpeed < 20 && this.horizontalSpeed > 2){
+            this.horizontalSpeed += 5
+        }
+        else if(this.horizontalSpeed >= 20 && this.horizontalSpeed < 140){
+            this,this.horizontalSpeed += 20
+        }
     }
 
 }
