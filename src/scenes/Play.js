@@ -9,7 +9,7 @@ class Play extends Phaser.Scene {
         this.shakeDuration = 0
         this.wobbleAmount = 0
         this.wobbleDuration = 1000
-        this.scaleFactor = 0.997;
+        this.scaleFactor = 0.998;
 
         
     }
@@ -28,6 +28,7 @@ class Play extends Phaser.Scene {
         const gameHeight = this.cameras.main.height;
         this.background = this.add.tileSprite(0, 0, gameWidth, gameHeight, 'background').setOrigin(.5, .5);
         this.background.setPosition(gameWidth / 2, gameHeight / 2);
+        
 
         this.spaceBar = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE);
         
@@ -36,11 +37,8 @@ class Play extends Phaser.Scene {
 
         this.scoreText = this.add.text(110, 32, `Smack count: ${this.score}`, { fontSize: '32px', fill: '#fff' });
 
-        // Animation details
-        this.animationDuration = (10 / 10) * 1000; // Duration in millisecond}
-
         //dragon
-        this.dragon = this.add.sprite(400, 200, "dragon");
+        this.dragon = this.add.sprite(600, 200, "dragon");
         this.dragon.setScale(.3)
         this.isMoving = true;
         this.moveDirection = 1;
@@ -63,11 +61,11 @@ class Play extends Phaser.Scene {
         //zoom
         this.cursors = this.input.keyboard.createCursorKeys();
         this.horizontalSpeed = 1
-        this.zoomSpeed = .01; // How quickly the camera zooms in
-        this.maxZoom = 3; // Maximum zoom level
-        this.defaultZoom = 1; // Normal zoom level
-        this.currentZoom = 1; // Start with normal size
-        this.zoomIncrement = 0.2; // Adjust this value to control how much it zooms each time
+        this.zoomSpeed = .01; 
+        this.maxZoom = 3; 
+        this.defaultZoom = 1; 
+        this.currentZoom = 1; 
+        this.zoomIncrement = 0.2;
 
         //use key
         const keySpace = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.keySpace)
@@ -85,17 +83,14 @@ class Play extends Phaser.Scene {
     update(time, delta){
         if (this.isMoving) {
             this.dragon.x += this.moveDirection * (this.horizontalSpeed * 20) * (delta / 1000);
-            // console.log(this.dragon.x)
         }
 
         if(this.isMoving == 0){
             this.dragon.setScale(this.dragon.scaleX * this.scaleFactor, this.dragon.scaleY * this.scaleFactor);
         }
-        //this.dragon.x = Phaser.Math.Clamp(this.dragon.x, 0, this.game.config.width);
-
         
         if(this.growing){
-            this.dragon.setScale(this.dragon.scaleX / this.scaleFactor *1.001, this.dragon.scaleY / this.scaleFactor*1.001);
+            this.dragon.setScale(this.dragon.scaleX / this.scaleFactor * 1.001, this.dragon.scaleY / this.scaleFactor * 1.001);
         }
 
 
@@ -106,14 +101,8 @@ class Play extends Phaser.Scene {
             this.cameras.main.scrollX += this.horizontalSpeed;
         }
 
-
-        if (this.cursors.up.isDown){
-            //this.jump_simulation()
-            this.forward()
-            this.HeartBeat.stop()
-        }
         if (this.cursors.down.isDown){
-            this.arms.anims.play('use', true);
+            this.arms.anims.play('run');
             this.forward()
         }
 
@@ -123,36 +112,34 @@ class Play extends Phaser.Scene {
             this.isJumping = true
             this.arms.anims.play('use', true);
             this.HeartBeat.play();
+            let useAnimation = this.arms.anims.play('use', true);
 
-            let newZoom = Math.min(this.currentZoom + this.zoomIncrement);
-            
-            // Increase the shake amount by the current increment
-        
-            this.tweens.add({
-                targets: this.background,
-                scaleX: newZoom,
-                scaleY: newZoom,
-                duration: this.animationDuration,
-                ease: 'Linear',
-                onStart: () => {
-                    this.gameStart = true
-                    this.growing = true
-                    
-
-                },
-                onComplete: () => {
-                    this.shake()
-                    this.wobble()
-                    this.speed()
-                    console.log(`Current horizontal speed: ${this.horizontalSpeed}`)
-                    this.currentZoom = newZoom;
-                    this.dragon.clearTint();
-                    this.arms.anims.play('run');
-                    this.increaseScore();
-                    this.growing = false
-                    this.isJumping = false
-
-                }
+            useAnimation.on('animationcomplete', () => {
+                let newZoom = Math.min(this.currentZoom + this.zoomIncrement); // Ensure this logic is correct; previously missing argument in Math.min()
+                this.tweens.add({
+                    targets: this.background,
+                    scaleX: newZoom,
+                    scaleY: newZoom,
+                    duration: 1000, // Duration of the zoom effect
+                    ease: 'Linear',
+                    onStart: () => {
+                        this.gameStart = true;
+                        this.growing = true;
+                    },
+                    onComplete: () => {
+                        this.shake();
+                        this.color();
+                        this.wobble();
+                        this.speed();
+                        this.currentZoom = newZoom;
+                        this.dragon.clearTint();
+                        this.arms.anims.play('run');
+                        this.increaseScore();
+                        this.growing = false;
+                        this.isJumping = false;
+                        this.forward()
+                    }
+                });
             });
         }
         
@@ -167,13 +154,30 @@ class Play extends Phaser.Scene {
     }
     //functions
     forward(){
-        let newZoom = Phaser.Math.Clamp(this.background.scaleX + this.zoomSpeed, this.defaultZoom, this.maxZoom);
-        this.background.setScale(newZoom);
+        const scaleInc = 0.001; // Increment of scale for each call
+
+    if (!this.scaleEvent) { // Prevent multiple scale events from being created
+        this.scaleEvent = this.time.addEvent({
+            callback: () => {
+                // Get the current scale of the background
+                let currentScaleX = this.background.scaleX;
+                let currentScaleY = this.background.scaleY;
+
+                // Calculate the new scale
+                let newScaleX = currentScaleX + scaleInc;
+                let newScaleY = currentScaleY + scaleInc;
+
+                // Set the new scale to the background
+                this.background.setScale(newScaleX, newScaleY);
+            },
+            loop: true // Keep looping the event
+        });
     }
+}
     
     dragonmove(){
         this.time.addEvent({
-            delay: Phaser.Math.Between(1000, 2000),
+            delay: Phaser.Math.Between(500, 2000),
             callback: () => {
                 this.isMoving = Phaser.Math.Between(0, 1) === 1;
                 if (this.isMoving) {
@@ -183,39 +187,6 @@ class Play extends Phaser.Scene {
             },
             callbackScope: this
         });
-    }
-
-
-    jump_simulation() {
-        this.jumpPeak = -30; // The peak height of the jump
-        this.jumpSpeed = 1; // How fast the jump happens
-        if (!this.isJumping) {
-            this.isJumping = true;
-            let peakReached = false;
-            let jumpStep = 35
-            this.time.addEvent({
-                loop: true,
-                callback: () => {
-                    if (!peakReached) {
-                        this.background.tilePositionY += jumpStep;
-                        if (jumpStep <= this.jumpPeak) {
-                            peakReached = true;
-                        }
-                    } else {
-                        this.background.tilePositionY -= jumpStep;
-                        if (this.background.tilePositionY <= 0) {
-                            this.background.tilePositionY = 0;
-                            this.isJumping = false;
-                            peakReached = false;
-                            jumpStep = this.jumpSpeed; // Reset for next jump
-                            this.time.removeAllEvents(); // Stop the jumping loop
-                        }
-                    }
-                    jumpStep *= 0.98; // Decrement to simulate gravity
-                },
-                delay: 20 // Adjust for faster or slower animation
-            });
-        }
     }
 
     end(){
@@ -236,10 +207,33 @@ class Play extends Phaser.Scene {
         }
         // Now apply the shake with the updated amount
         this.cameras.main.shake(this.shakeDuration, this.shakeAmount)
+
+        this.color(this.shakeDuration);
         
 
         // Log the current shake amount for debugging purposes
         console.log(`Current shake amount: ${this.shakeAmount}`);
+    }
+
+    color(){
+        if(this.score <= 2){
+            this.background.setTint(0xccffcc); //light green
+        }
+        else if(this.score >2 && this.score <= 4){
+            this.background.setTint(0xffffcc); //light yellow
+        }
+        else if(this.score >4 && this.score <= 5){
+            this.background.setTint(0xdddd99); //yellow
+        }
+        else if(this.score >5 && this.score <=7 ){
+            this.background.setTint(0xff3333) //light red
+        }
+        else if(this.score > 7){
+            this.background.setTint(0xff0000) //red
+        }   
+        this.time.delayedCall(this.shakeDuration, () => {
+                this.background.clearTint();
+        });
     }
 
     wobble(){

@@ -33,7 +33,7 @@ class Load extends Phaser.Scene {
         //hand animations
         this.anims.create({
             key: "use",
-            frameRate: 4,
+            frameRate: 8,
             repeat: 0,
             frames: this.anims.generateFrameNumbers('arms', {start: 4, end: 7}),
         });
