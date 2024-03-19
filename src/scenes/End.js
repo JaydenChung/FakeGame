@@ -4,6 +4,7 @@ class End extends Phaser.Scene{
     }
 
     preload(){
+        this.load.image("end", "assets/end.jpg")
     }
     create(){
         this.cameras.main.setBackgroundColor('#f5624c');
@@ -23,8 +24,8 @@ class End extends Phaser.Scene{
         
         this.EndMusic = this.sound.add("EndMusic")
         this.EndMusic.play()
-//         //displaygameover
-//         const gameOverImage = this.add.image(0, 0, 'gameOver').setOrigin(0,0);
+
+        this.end= this.add.image(0, 0, 'end').setOrigin(0,0);
 
         this.add.text(this.game.config.width-400, 200, 'GAME OVER!', {
             fontSize: '62px',

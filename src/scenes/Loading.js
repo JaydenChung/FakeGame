@@ -1,4 +1,4 @@
-class Load extends Phaser.Scene {
+class Loading extends Phaser.Scene {
     constructor() {
         super('load_scene')
     }
@@ -9,9 +9,14 @@ class Load extends Phaser.Scene {
 
         //preload anims
 
-        this.load.spritesheet('arms', 'arms_spritesheet.png', {
-            frameWidth: 62.5,
-            frameHeight: 40
+        this.load.spritesheet('arms', 'RealArm.png', {
+            frameWidth: 1280,
+            frameHeight: 534
+        })
+
+        this.load.spritesheet('smack', 'Smack.png', {
+            frameWidth: 200,
+            frameHeight: 306
         })
     }
     create(){
@@ -33,20 +38,31 @@ class Load extends Phaser.Scene {
         //hand animations
         this.anims.create({
             key: "use",
-            frameRate: 8,
+            frameRate: 6,
             repeat: 0,
-            frames: this.anims.generateFrameNumbers('arms', {start: 4, end: 7}),
+            frames: this.anims.generateFrameNumbers('arms', {start: 0, end: 2}),
         });
         
         this.anims.create({
             key: "run",
-            frameRate: 6,
+            frameRate: 1,
             repeat: -1,
-            frames: this.anims.generateFrameNumbers('arms', {start: 3, end: 0}),
+            frames: this.anims.generateFrameNumbers('arms', {start: 0, end: 1}),
         });
         
+        this.anims.create({
+            key: "jar1",
+            frames: this.anims.generateFrameNumbers('smack', {start: 1, end: 1}),
+        });
+        this.anims.create({
+            key: "jar2",
+            frames: this.anims.generateFrameNumbers('smack', {start: 2, end: 2}),
+        });
+        this.anims.create({
+            key: "jar3",
+            frames: this.anims.generateFrameNumbers('smack', {start: 3, end: 3}),
+        });
         
-        
-        this.scene.start('play_scene')
+        this.scene.start('menuScene')
     }
 }

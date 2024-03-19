@@ -18,7 +18,6 @@ class Play extends Phaser.Scene {
         this.load.image("background", "assets/background.png")
         this.load.image("dragon", "assets/dragon.png")
         this.load.image("border", "assets/border.png") 
-        this.load.image("smack", "assets/smack.png");
         //audio 
         this.load.audio("HeartBeat", "assets/HeartBeat.wav")
         this.load.audio("game", "assets/game.wav")
@@ -26,7 +25,7 @@ class Play extends Phaser.Scene {
     create(){
         const gameWidth = this.cameras.main.width;
         const gameHeight = this.cameras.main.height;
-        this.background = this.add.tileSprite(0, 0, gameWidth, gameHeight, 'background').setOrigin(.5, .5);
+        this.background = this.add.image(0, 0, 'background').setOrigin(.5, .5);
         this.background.setPosition(gameWidth / 2, gameHeight / 2);
         
 
@@ -45,8 +44,8 @@ class Play extends Phaser.Scene {
         this.dragonmove()
 
 
-        this.arms = this.add.sprite(config.width / 2, config.height/ 1.15, 'arms'); 
-        this.arms.setScale(10)
+        this.arms = this.add.sprite(config.width / 2, config.height/ 1.18, 'arms'); 
+        this.arms.setScale(.7)
         this.arms.setScrollFactor(0);
 
         this.border = this.add.sprite(config.width / 2, config.height/2, 'border');
@@ -55,17 +54,24 @@ class Play extends Phaser.Scene {
         //syringe
 
         //smack
+        
         this.smack = this.add.sprite(config.width / 1.15, config.height/ 1.3, 'smack'); 
-        this.smack.setScale(.5)
+        this.smack.setScale(.7)
         this.smack.setScrollFactor(0)
+
+        // if (this.score == 1){
+        //     this.smack.anims.play('jar1');
+        // }
+        
+
         //zoom
         this.cursors = this.input.keyboard.createCursorKeys();
         this.horizontalSpeed = 1
         this.zoomSpeed = .01; 
-        this.maxZoom = 3; 
+        this.maxZoom = 10; 
         this.defaultZoom = 1; 
         this.currentZoom = 1; 
-        this.zoomIncrement = 0.2;
+        this.zoomIncrement = 0.3;
 
         //use key
         const keySpace = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.keySpace)
@@ -114,7 +120,6 @@ class Play extends Phaser.Scene {
             this.HeartBeat.play();
             let useAnimation = this.arms.anims.play('use', true);
 
-            useAnimation.on('animationcomplete', () => {
                 let newZoom = Math.min(this.currentZoom + this.zoomIncrement); // Ensure this logic is correct; previously missing argument in Math.min()
                 this.tweens.add({
                     targets: this.background,
@@ -131,15 +136,14 @@ class Play extends Phaser.Scene {
                         this.color();
                         this.wobble();
                         this.speed();
+                        this.increaseScore()
                         this.currentZoom = newZoom;
                         this.dragon.clearTint();
                         this.arms.anims.play('run');
-                        this.increaseScore();
                         this.growing = false;
                         this.isJumping = false;
                         this.forward()
                     }
-                });
             });
         }
         
@@ -216,19 +220,19 @@ class Play extends Phaser.Scene {
     }
 
     color(){
-        if(this.score <= 2){
+        if(this.score <= 1){
             this.background.setTint(0xccffcc); //light green
         }
-        else if(this.score >2 && this.score <= 4){
+        else if(this.score >1 && this.score <= 2){
             this.background.setTint(0xffffcc); //light yellow
         }
-        else if(this.score >4 && this.score <= 5){
+        else if(this.score >2 && this.score <= 4){
             this.background.setTint(0xdddd99); //yellow
         }
-        else if(this.score >5 && this.score <=7 ){
+        else if(this.score >4 && this.score <=6 ){
             this.background.setTint(0xff3333) //light red
         }
-        else if(this.score > 7){
+        else if(this.score > 6){
             this.background.setTint(0xff0000) //red
         }   
         this.time.delayedCall(this.shakeDuration, () => {
@@ -247,7 +251,7 @@ class Play extends Phaser.Scene {
             this.wobbleDuration -= 100
         }
         this.wobbleTween = this.tweens.add({
-                targets: this, // Change targets to this scene
+                targets: this.background,
                 wobbleIntensity: { from: -this.wobbleAmount, to: this.wobbleAmount },
                 duration: this.wobbleDuration,
                 yoyo: true,
