@@ -15,6 +15,7 @@ class Play extends Phaser.Scene {
     }
  
     preload(){
+        
         this.load.image("background", "assets/background.png")
         this.load.image("dragon", "assets/dragon.png")
         this.load.image("border", "assets/border.png") 
@@ -34,10 +35,10 @@ class Play extends Phaser.Scene {
         //score
         this.score = 0;
 
-        this.scoreText = this.add.text(110, 32, `Smack count: ${this.score}`, { fontSize: '32px', fill: '#fff' });
 
         //dragon
         this.dragon = this.add.sprite(600, 200, "dragon");
+        
         this.dragon.setScale(.3)
         this.isMoving = true;
         this.moveDirection = 1;
@@ -149,7 +150,9 @@ class Play extends Phaser.Scene {
         
         //collision
         if (!this.cameras.main.worldView.contains(this.dragon.x+200, this.dragon.y+100)) {
+            this.scene.restart();
             this.end()
+
         }
 
         if (this.dragon.scaleY < .1) {
@@ -199,7 +202,6 @@ class Play extends Phaser.Scene {
 
     increaseScore() {
         this.score += 1;
-        this.scoreText.setText(`Smack count: ${this.score}`);
       }
     
     shake(){
@@ -222,15 +224,18 @@ class Play extends Phaser.Scene {
     color(){
         if(this.score <= 1){
             this.background.setTint(0xccffcc); //light green
+            this.smack.anims.play('jar1')
         }
         else if(this.score >1 && this.score <= 2){
             this.background.setTint(0xffffcc); //light yellow
         }
         else if(this.score >2 && this.score <= 4){
             this.background.setTint(0xdddd99); //yellow
+            this.smack.anims.play('jar2')
         }
         else if(this.score >4 && this.score <=6 ){
             this.background.setTint(0xff3333) //light red
+            this.smack.anims.play('jar3')
         }
         else if(this.score > 6){
             this.background.setTint(0xff0000) //red
