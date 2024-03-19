@@ -198,6 +198,7 @@ class Play extends Phaser.Scene {
 
     end(){
         this.scene.start('gameOverScene') 
+        this.game.stop()
     }
 
     increaseScore() {

@@ -5,12 +5,12 @@ class Menu extends Phaser.Scene {
   
     preload() {
       this.load.image("menuImage", "assets/FakeMenu.png");
-      //this.load.audio("MenuMusic", "assets/MenuMusic.wav")
+      this.load.audio("Menu", "assets/Menu.wav")
     }
   
     create() {
-    //   this.MenuMusic = this.sound.add("MenuMusic")
-    //   this.MenuMusic.play()
+      this.Menu = this.sound.add("Menu")
+      this.Menu.play()
       const menuImage = this.add.image(0, 0, "menuImage").setOrigin(0, 0);
   
       // Scale the menu image to fit the screen
@@ -43,7 +43,7 @@ class Menu extends Phaser.Scene {
   
       // Start the game on spacebar press
       this.input.keyboard.on("keydown-SPACE", () => {
-        //this.MenuMusic.stop()
+        this.Menu.stop()
         this.scene.start("play_scene");
       });
       this.input.keyboard.on("keydown-R", () => {
