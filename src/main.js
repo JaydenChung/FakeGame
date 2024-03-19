@@ -1,3 +1,9 @@
+//Jayden Chung
+
+//Ali Taquie
+
+//tween timeline, animations, spritesheets, camera effects (color, wobble, shake), text
+
 var config = {
     type: Phaser.AUTO,
     width: 1300,
