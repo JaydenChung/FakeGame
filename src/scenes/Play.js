@@ -9,7 +9,7 @@ class Play extends Phaser.Scene {
         this.shakeDuration = 0
         this.wobbleAmount = 0
         this.wobbleDuration = 1000
-        this.scaleFactor = 0.998;
+        this.scaleFactor = 0.997;
     }
  
     preload(){
@@ -39,7 +39,7 @@ class Play extends Phaser.Scene {
         //dragon
         this.dragon = this.physics.add.sprite(600, 200, "dragon");
         this.dragon.body.setSize(30, 300)
-        this.dragon.body.setOffset(320, 200)
+        this.dragon.body.setOffset(500, 300)
         this.dragon.setScale(.3)
         this.isMoving = true;
         this.moveDirection = 1;
@@ -96,7 +96,8 @@ class Play extends Phaser.Scene {
     update(time, delta){
         const gameHeight = this.cameras.main.height;
         if (this.isMoving) {
-            this.dragon.x += this.moveDirection * (this.horizontalSpeed * 20) * (delta / 1000);
+            this.dragon.x += this.moveDirection * (this.horizontalSpeed * 15) * (delta / 1000) + 2;
+            this.dragon.anims.play('dragon_fly')
         }
 
         if(this.isMoving == 0){
@@ -166,6 +167,9 @@ class Play extends Phaser.Scene {
         if (this.dragon.scaleY < .1) {
             this.end()
         }
+        this.Lborder.setRotation(-this.cameras.main.rotation); //reduce wobble of borders as much as possible
+        this.Rborder.setRotation(-this.cameras.main.rotation);
+
     }
     //functions
     forward(){
@@ -210,7 +214,7 @@ class Play extends Phaser.Scene {
         this.shakeDuration = 0
         this.wobbleAmount = 0
         this.wobbleDuration = 1000
-        this.scaleFactor = 0.998;
+        this.scaleFactor = 0.997;
         this.score = 0
         this.scene.start('gameOverScene') 
         
@@ -222,18 +226,14 @@ class Play extends Phaser.Scene {
     
     shake(){
         if(this.shakeAmount < .3){
-            this.shakeAmount += 0.004; // Adjust the increment as needed
+            this.shakeAmount += 0.002; 
         }
         if (this.shakeDuration < 9000){
             this.shakeDuration += 1500
         }
-        // Now apply the shake with the updated amount
         this.cameras.main.shake(this.shakeDuration, this.shakeAmount)
 
         this.color(this.shakeDuration);
-        
-
-        // Log the current shake amount for debugging purposes
     }
 
     color(){
@@ -277,14 +277,10 @@ class Play extends Phaser.Scene {
                 yoyo: true,
                 repeat: -1,
                 onUpdate: tween => {   
-                    this.cameras.main.setRotation(tween.getValue()); 
+                    this.cameras.main.setRotation(tween.getValue());
+                    // this.Lborder.setRotation(-tween.getValue()); //reduce wobble of borders as much as possible
+                    // this.Rborder.setRotation(-tween.getValue()); 
 
-                    if (this.Lborder) {
-                        this.Lborder.setRotation(-tween.getValue());
-                    }
-                    if (this.Rborder) {
-                        this.Rborder.setRotation(-tween.getValue());
-                    }
                 },
             });
     }

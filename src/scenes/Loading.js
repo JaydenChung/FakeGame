@@ -8,6 +8,10 @@ class Loading extends Phaser.Scene {
         this.load.audio('EndMusic', 'EndMusic.mp3')
 
         //preload anims
+        this.load.spritesheet('dragon', 'dragon.png', {
+            frameWidth: 905,
+            frameHeight: 791
+        })
 
         this.load.spritesheet('arms', 'RealArm.png', {
             frameWidth: 1280,
@@ -22,17 +26,10 @@ class Loading extends Phaser.Scene {
     create(){
         
         this.anims.create({
-            key:"dragon-move",
+            key:"dragon_fly",
             framerate: 8,
             repeat: -1,
-            frames: this.anims.generateFrameNumbers('dragon', {start: 0, end: 10}),
-        })
-
-        this.anims.create({
-            key:"dragon-idle",
-            framerate: 8,
-            repeat: -1,
-            frames: this.anims.generateFrameNumbers('dragon', {start: 10, end: 20}),
+            frames: this.anims.generateFrameNumbers('dragon', {start: 0, end: 2}),
         })
 
         //hand animations
