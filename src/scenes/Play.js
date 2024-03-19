@@ -10,20 +10,20 @@ class Play extends Phaser.Scene {
         this.wobbleAmount = 0
         this.wobbleDuration = 1000
         this.scaleFactor = 0.998;
-
-        
     }
  
     preload(){
         
         this.load.image("background", "assets/background.png")
         this.load.image("dragon", "assets/dragon.png")
-        this.load.image("border", "assets/border.png") 
+        this.load.image("Lborder", "assets/Lborder.png") 
+        this.load.image("Rborder", "assets/Rborder.png") 
         //audio 
         this.load.audio("HeartBeat", "assets/HeartBeat.wav")
         this.load.audio("game", "assets/game.wav")
     }   
     create(){
+        
         const gameWidth = this.cameras.main.width;
         const gameHeight = this.cameras.main.height;
         this.background = this.add.image(0, 0, 'background').setOrigin(.5, .5);
@@ -37,8 +37,9 @@ class Play extends Phaser.Scene {
 
 
         //dragon
-        this.dragon = this.add.sprite(600, 200, "dragon");
-        
+        this.dragon = this.physics.add.sprite(600, 200, "dragon");
+        this.dragon.body.setSize(30, 300)
+        this.dragon.body.setOffset(320, 200)
         this.dragon.setScale(.3)
         this.isMoving = true;
         this.moveDirection = 1;
@@ -49,9 +50,15 @@ class Play extends Phaser.Scene {
         this.arms.setScale(.7)
         this.arms.setScrollFactor(0);
 
-        this.border = this.add.sprite(config.width / 2, config.height/2, 'border');
-        this.border.scaleY = 1.2
-        this.border.setScrollFactor(0);
+        this.Lborder = this.physics.add.sprite(this.cameras.main.scrollX+45, config.height/2, 'Lborder');
+        this.Lborder.scaleY = 1.2
+        this.Lborder.body.setSize(10, 20)
+        this.Lborder.body.setOffset(3, 220)
+        this.Rborder = this.physics.add.sprite(this.cameras.main.scrollX+1255, config.height/2, 'Rborder');
+        this.Rborder.scaleY = 1.2
+        this.Rborder.body.setSize(10, 20)
+        this.Rborder.body.setOffset(80, 220)
+
         //syringe
 
         //smack
@@ -84,10 +91,10 @@ class Play extends Phaser.Scene {
         this.HeartBeat = this.sound.add("HeartBeat", {loop: true}, {volume: 50})
 
 
-
     }
 
     update(time, delta){
+        const gameHeight = this.cameras.main.height;
         if (this.isMoving) {
             this.dragon.x += this.moveDirection * (this.horizontalSpeed * 20) * (delta / 1000);
         }
@@ -103,9 +110,13 @@ class Play extends Phaser.Scene {
 
         if (this.cursors.left.isDown) {
             this.cameras.main.scrollX -= this.horizontalSpeed;
+            this.Lborder.setPosition(this.cameras.main.scrollX+45, gameHeight/2)
+            this.Rborder.setPosition(this.cameras.main.scrollX+1255, gameHeight/2)
         }
         if (this.cursors.right.isDown) {
             this.cameras.main.scrollX += this.horizontalSpeed;
+            this.Lborder.setPosition(this.cameras.main.scrollX+45, gameHeight/2)
+            this.Rborder.setPosition(this.cameras.main.scrollX+1255, gameHeight/2)
         }
 
         if (this.cursors.down.isDown){
@@ -149,11 +160,8 @@ class Play extends Phaser.Scene {
         }
         
         //collision
-        if (!this.cameras.main.worldView.contains(this.dragon.x+200, this.dragon.y+100)) {
-            this.scene.restart();
-            this.end()
-
-        }
+        this.physics.add.collider(this.dragon, this.Lborder, this.end, null, this);
+        this.physics.add.collider(this.dragon, this.Rborder, this.end, null, this);
 
         if (this.dragon.scaleY < .1) {
             this.end()
@@ -197,8 +205,15 @@ class Play extends Phaser.Scene {
     }
 
     end(){
+        this.smackCount = 0;
+        this.shakeAmount = 0; 
+        this.shakeDuration = 0
+        this.wobbleAmount = 0
+        this.wobbleDuration = 1000
+        this.scaleFactor = 0.998;
+        this.score = 0
         this.scene.start('gameOverScene') 
-        this.game.stop()
+        
     }
 
     increaseScore() {
@@ -219,7 +234,6 @@ class Play extends Phaser.Scene {
         
 
         // Log the current shake amount for debugging purposes
-        console.log(`Current shake amount: ${this.shakeAmount}`);
     }
 
     color(){
@@ -265,12 +279,14 @@ class Play extends Phaser.Scene {
                 onUpdate: tween => {   
                     this.cameras.main.setRotation(tween.getValue()); 
 
-                    if (this.border) {
-                        this.border.setRotation(-tween.getValue());
+                    if (this.Lborder) {
+                        this.Lborder.setRotation(-tween.getValue());
+                    }
+                    if (this.Rborder) {
+                        this.Rborder.setRotation(-tween.getValue());
                     }
                 },
             });
-            console.log(`Current wobble amount: ${this.wobbleAmount}`)
     }
 
     speed(){

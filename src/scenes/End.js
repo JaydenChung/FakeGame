@@ -35,8 +35,7 @@ class End extends Phaser.Scene{
           }).setOrigin(1, 0);
         
           this.input.keyboard.on("keydown-R", () => {
-                this.scene.restart();
-              this.scene.start("play_scene")
+              this.scene.start("load_scene")
             });
         }
         

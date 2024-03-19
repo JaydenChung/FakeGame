@@ -5,12 +5,9 @@ class Rules extends Phaser.Scene {
   
     preload() {
       this.load.image("ruleImage", "assets/southpark.png");
-      //this.load.audio("MenuMusic", "assets/MenuMusic.wav")
     }
   
     create() {
-    //   this.MenuMusic = this.sound.add("MenuMusic")
-    //   this.MenuMusic.play()
       const menuImage = this.add.image(0, 0, "ruleImage").setOrigin(0, 0);
   
       // Scale the menu image to fit the screen
