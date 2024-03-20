@@ -9,7 +9,7 @@ class Play extends Phaser.Scene {
         this.shakeDuration = 0
         this.wobbleAmount = 0
         this.wobbleDuration = 1000
-        this.scaleFactor = 0.997;
+        this.scaleFactor = 0.996;
     }
  
     preload(){
@@ -196,7 +196,7 @@ class Play extends Phaser.Scene {
     
     dragonmove(){
         this.time.addEvent({
-            delay: Phaser.Math.Between(500, 2000),
+            delay: Phaser.Math.Between(500, 1200),
             callback: () => {
                 this.isMoving = Phaser.Math.Between(0, 1) === 1;
                 if (this.isMoving) {
@@ -214,7 +214,7 @@ class Play extends Phaser.Scene {
         this.shakeDuration = 0
         this.wobbleAmount = 0
         this.wobbleDuration = 1000
-        this.scaleFactor = 0.997;
+        this.scaleFactor = 0.996;
         this.score = 0
         this.scene.start('gameOverScene') 
         
