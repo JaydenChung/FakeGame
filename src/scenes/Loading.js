@@ -5,7 +5,6 @@ class Loading extends Phaser.Scene {
     preload(){
         this.load.path = './assets/'
 
-        this.load.audio('EndMusic', 'EndMusic.mp3')
 
         //preload anims
         this.load.spritesheet('dragon', 'dragon.png', {

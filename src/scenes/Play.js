@@ -38,8 +38,8 @@ class Play extends Phaser.Scene {
 
         //dragon
         this.dragon = this.physics.add.sprite(600, 200, "dragon");
-        this.dragon.body.setSize(30, 300)
-        this.dragon.body.setOffset(500, 300)
+        this.dragon.body.setSize(30, 2000)
+        this.dragon.body.setOffset(500, -200)
         this.dragon.setScale(.3)
         this.isMoving = true;
         this.moveDirection = 1;
@@ -88,15 +88,16 @@ class Play extends Phaser.Scene {
         //audio
         this.game = this.sound.add("game")
         this.game.play()
-        this.HeartBeat = this.sound.add("HeartBeat", {loop: true}, {volume: 50})
+        this.HeartBeat = this.sound.add("HeartBeat", {loop: true}, {volume: 5})
 
 
     }
 
     update(time, delta){
+        this.endCalled = false;
         const gameHeight = this.cameras.main.height;
         if (this.isMoving) {
-            this.dragon.x += this.moveDirection * (this.horizontalSpeed * 15) * (delta / 1000) + 2;
+            this.dragon.x += this.moveDirection * (this.horizontalSpeed * 20) * (delta / 1000) + 1;
             this.dragon.anims.play('dragon_fly')
         }
 
@@ -120,10 +121,6 @@ class Play extends Phaser.Scene {
             this.Rborder.setPosition(this.cameras.main.scrollX+1255, gameHeight/2)
         }
 
-        if (this.cursors.down.isDown){
-            this.arms.anims.play('run');
-            this.forward()
-        }
 
 
         //arms tween
@@ -156,6 +153,7 @@ class Play extends Phaser.Scene {
                         this.growing = false;
                         this.isJumping = false;
                         this.forward()
+                        this.scaleFactor -= .001;
                     }
             });
         }
@@ -164,7 +162,7 @@ class Play extends Phaser.Scene {
         this.physics.add.collider(this.dragon, this.Lborder, this.end, null, this);
         this.physics.add.collider(this.dragon, this.Rborder, this.end, null, this);
 
-        if (this.dragon.scaleY < .1) {
+        if (this.dragon.scaleY < .05) {
             this.end()
         }
         this.Lborder.setRotation(-this.cameras.main.rotation); //reduce wobble of borders as much as possible
@@ -209,6 +207,11 @@ class Play extends Phaser.Scene {
     }
 
     end(){
+        if (!this.endCalled) {
+            this.endCalled = true;
+        this.game.stop()
+        this.isJumping = false;
+        this.growing = false;
         this.smackCount = 0;
         this.shakeAmount = 0; 
         this.shakeDuration = 0
@@ -216,8 +219,9 @@ class Play extends Phaser.Scene {
         this.wobbleDuration = 1000
         this.scaleFactor = 0.996;
         this.score = 0
+        this.scene.stop()
         this.scene.start('gameOverScene') 
-        
+        }
     }
 
     increaseScore() {
