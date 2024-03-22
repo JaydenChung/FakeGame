@@ -47,9 +47,11 @@ class Menu extends Phaser.Scene {
         this.scene.start("play_scene");
       });
       this.input.keyboard.on("keydown-R", () => {
+        this.Menu.stop()
         this.scene.start("ruleScene")
       });
       this.input.keyboard.on("keydown-C", () => {
+        this.Menu.stop()
         this.scene.start("creditScene")
       });
     }
